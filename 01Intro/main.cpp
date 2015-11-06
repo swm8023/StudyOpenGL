@@ -1,25 +1,22 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include "GLApp.hpp"
-#include "GLProg.hpp"
-#include "GLObject.hpp"
+#include "GLApp.h"
 
-class DTriangleObject : public GLObject {
+class DTriangleObject : public GLElement {
 public:
-	virtual void Init() {
+	virtual void Initialize() {
 		GLfloatArray vert;
 		vert.Init(6, 2, {
 			-0.90f, -0.90f,
-			0.85f, -0.90f,
+			 0.85f, -0.90f,
 			-0.90f,  0.85f,
-			0.90f, -0.85f,
-			0.90f,  0.90f,
+			 0.90f, -0.85f,
+			 0.90f,  0.90f,
 			-0.85f,  0.90f });
 		LoadResources(&vert, nullptr, nullptr);
-		
 	}
 
-	virtual void Draw() {
+	virtual void Update() {
 		DrawArrays(GL_TRIANGLES);
 	}
 };
@@ -41,12 +38,17 @@ public:
 		prog.Link();
 		prog.Use();
 
+		DTriangleObject *dto = new DTriangleObject();
+		dto->Initialize();
+		this->addElement(dto);
 
 	}
 
-	void Display() {
+	void BeforeUpdate() {
 		glClear(GL_COLOR_BUFFER_BIT);
+	}
 
+	void AfterUpdate() {
 		glFlush();
 	}
 
@@ -65,8 +67,5 @@ int main(int argc, char *argv[]) {
 	MyWindow *w = new MyWindow(512, 512, "Hello");
 	GLApp::GetInstance()->SetWindow(w);
 	GLApp::GetInstance()->Go(argc, argv);
-
-	
-
 
 }
