@@ -5,7 +5,22 @@
 #include "GLObject.hpp"
 
 class DTriangleObject : public GLObject {
+public:
+	virtual void Init() {
+		GLfloatArray vert;
+		vert.Init(6, 2, {
+			-0.90f, -0.90f,
+			0.85f, -0.90f,
+			-0.90f,  0.85f,
+			0.90f, -0.85f,
+			0.90f,  0.90f,
+			-0.85f,  0.90f });
+		LoadResources(&vert, nullptr, nullptr);
+	}
 
+	virtual void Draw() {
+		DrawArrays(GL_TRIANGLES, 0, 6);
+	}
 };
 
 
@@ -25,20 +40,14 @@ public:
 		prog.Link();
 		prog.Use();
 
-		
-		GLfloatArray varr;
-		varr.
-
-		
-
+		dtobj.Init();
 
 	}
 
 	void Display() {
 		glClear(GL_COLOR_BUFFER_BIT);
-		
+		dtobj.Draw();
 		glFlush();
-		
 	}
 
 	void Reshape(int iWidth, int iHeight) {
@@ -53,7 +62,7 @@ private:
 };
 
 int main(int argc, char *argv[]) {
-	GLMyWindow *w = new GLMyWindow(512, 512, "Hello");
+	MyWindow *w = new MyWindow(512, 512, "Hello");
 	GLApp::GetInstance()->SetWindow(w);
 	GLApp::GetInstance()->Go(argc, argv);
 

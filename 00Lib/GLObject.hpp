@@ -12,23 +12,24 @@ class GLArray {
 public:
 	GLArray() : m_iRow(0), m_iCol(0) {}
 
+	void Init(int iRow, int iCol, vector<T> data) {
+		m_data = data;
+		m_iRow = iRow;
+		m_iCol = iCol;
+	}
+
 	const T* Data() const {
-		return Size() > 0 ? &data[0] : nullptr;
+		return Size() > 0 ? &m_data[0] : nullptr;
 	}
 	const int Size() const {
 		return m_iRow * m_iCol * sizeof(T);
 	}
 
-	int GetRow() { return m_iRow; }
-	int GetCol() { return m_iCol; }
+	int GetRow() const { return m_iRow; }
+	int GetCol() const { return m_iCol; }
 	void SetRow(int iRow) { m_iRow = iRow; }
 	void SetCol(int iCol) { m_iCol = iCol; }
 
-	void Init(vector<T> &data, int iRow, int iCol) {
-		m_data = data;
-		m_iRow = iRow;
-		m_iCol = iCol;
-	}
 private:
 	vector<T> m_data;
 	int m_iRow, m_iCol;
@@ -36,9 +37,14 @@ private:
 
 typedef GLArray<GLfloat> GLfloatArray;
 typedef GLArray<GLushort> GLushortArray;
+typedef GLArray<GLuint> GLuintArray;
+typedef GLArray<GLint> GLintArray;
 
 class GLObject {
 public:
+	virtual void Init() = 0;
+	virtual void Draw() = 0;
+
 	bool LoadResources(GLfloatArray *verts, GLfloatArray *colors, GLushortArray *indexes) {
 		// vertex array
 		glGenVertexArrays(1, &m_vao);
@@ -69,9 +75,8 @@ public:
 		if (indexes != nullptr) {
 			glGenBuffers(1, &m_ebo);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes->Size(), indexes->Data(), GL_STATIC_DRAW);
+			//glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes->Size(), indexes->Data(), GL_STATIC_DRAW);
 		}
-
 
 		return true;
 	}

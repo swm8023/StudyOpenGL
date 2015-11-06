@@ -65,6 +65,7 @@ public:
 			// attach to program
 			glAttachShader(m_iProg, entry->shader);
 		}
+		return true;
 	}
 
 	bool Link() {
@@ -89,7 +90,7 @@ public:
 		return true;
 	}
 
-	bool Use() {
+	void Use() {
 		glUseProgram(m_iProg);
 	}
 

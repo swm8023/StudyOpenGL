@@ -35,7 +35,6 @@ private:
 	int m_iHeight;
 	string m_strTitle;
 	
-	GL
 };
 
 
