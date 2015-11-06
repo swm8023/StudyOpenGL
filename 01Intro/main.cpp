@@ -16,10 +16,11 @@ public:
 			0.90f,  0.90f,
 			-0.85f,  0.90f });
 		LoadResources(&vert, nullptr, nullptr);
+		
 	}
 
 	virtual void Draw() {
-		DrawArrays(GL_TRIANGLES, 0, 6);
+		DrawArrays(GL_TRIANGLES);
 	}
 };
 
@@ -40,13 +41,12 @@ public:
 		prog.Link();
 		prog.Use();
 
-		dtobj.Init();
 
 	}
 
 	void Display() {
 		glClear(GL_COLOR_BUFFER_BIT);
-		dtobj.Draw();
+
 		glFlush();
 	}
 
@@ -57,7 +57,7 @@ public:
 private:
 	GLProg prog;
 
-	DTriangleObject dtobj;
+	DTriangleObject *dtobj;
 
 };
 

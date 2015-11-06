@@ -7,6 +7,8 @@
 #include <vector>
 using namespace std;
 
+class GLWindow;
+
 template<typename T>
 class GLArray {
 public:
@@ -45,14 +47,18 @@ public:
 	virtual void Init() = 0;
 	virtual void Draw() = 0;
 
+
+	// Load Methods
 	bool LoadResources(GLfloatArray *verts, GLfloatArray *colors, GLushortArray *indexes) {
 		// vertex array
 		glGenVertexArrays(1, &m_vao);
 		glBindVertexArray(m_vao);
 
 		int numLocation = 0;
-		// verts 
+		// init vertex buffer 
 		if (verts != nullptr) {
+			m_vboNum = verts->GetRow();
+
 			glGenBuffers(1, &m_vbo);
 			glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 			glBufferData(GL_ARRAY_BUFFER, verts->Size(), verts->Data(), GL_STATIC_DRAW);
@@ -61,8 +67,10 @@ public:
 			numLocation++;
 		}
 
-		// init colors
+		// init color buffer
 		if (colors != nullptr) {
+			m_cboNum = colors->GetRow();
+
 			glGenBuffers(1, &m_cbo);
 			glBindBuffer(GL_ARRAY_BUFFER, m_cbo);
 			glBufferData(GL_ARRAY_BUFFER, colors->Size(), colors->Data(), GL_STATIC_DRAW);
@@ -71,11 +79,13 @@ public:
 			numLocation++;
 		}
 
-		// init indexes
+		// init index buffer
 		if (indexes != nullptr) {
+			m_eboNum = indexes->GetRow();
+
 			glGenBuffers(1, &m_ebo);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-			//glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes->Size(), indexes->Data(), GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes->Size(), indexes->Data(), GL_STATIC_DRAW);
 		}
 
 		return true;
@@ -85,14 +95,32 @@ public:
 		return false;
 	}
 
+	// Draw Methods
 	void DrawArrays(GLenum type, int first, int nums) {
 		glBindVertexArray(m_vao);
 		glDrawArrays(type, first, nums);
 	}
 
+	void DrawArrays(GLenum type) {
+		return glDrawArrays(type, 0, m_vboNum);
+	}
+
 	void DrawElements() {
+
+	}
+	
+	// Getter and Setter
+	void SetWindow(GLWindow* window) {
+		this->m_window = window;
+	}
+
+	GLWindow* GetWindow() const{
+		return m_window;
 	}
 
 private:
 	GLuint m_vao, m_vbo, m_cbo, m_ebo;
+	GLint m_vaoNum, m_vboNum, m_cboNum, m_eboNum;
+
+	GLWindow* m_window;
 };

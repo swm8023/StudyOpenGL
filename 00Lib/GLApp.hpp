@@ -3,7 +3,9 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <string>
+#include <vector>
 #include <iostream>
+#include "GLObject.hpp"
 using namespace std;
 
 
@@ -28,7 +30,6 @@ public:
 	void SetWidth(int iWidth) { this->m_iWidth = iWidth; }
 	void SetHeight(int iHeight) { this->m_iHeight = iHeight; }
 	void SetTitle(string strTitle) { this->m_strTitle = strTitle; }
-
 
 private:
 	int m_iWidth;
