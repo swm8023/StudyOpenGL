@@ -14,6 +14,11 @@ GLWindow* GLApp::GetWindow() {
 	return m_pGLWindow;
 }
 
+void GLApp::SetContext(int mode, int major, int minor) {
+	m_iContextMode = mode;
+	m_iMajor = major;
+	m_iMinor = minor;
+}
 
 void GLApp::Go(int argc, char **argv) {
 	if (m_pGLWindow == nullptr) {
@@ -24,12 +29,22 @@ void GLApp::Go(int argc, char **argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA);
 	glutInitWindowSize(m_pGLWindow->GetWidth(), m_pGLWindow->GetHeight());
+	if (m_iMajor != -1) {
+		glutInitContextVersion(m_iMajor, m_iMinor);
+		glutInitContextProfile(m_iContextMode);
+	}
 	glutCreateWindow(m_pGLWindow->GetTitle().c_str());
-
-	if (glewInit()) {
-		cerr << " Unable to initialize glew!!" << endl;
+	
+	glewExperimental = GL_TRUE; // for support some functions
+	GLenum glewErr = glewInit();
+	if (glewErr != GLEW_OK) {
+		cerr << " GlewInit Error: " << glewGetErrorString(glewErr) << endl;
 		exit(-1);
 	}
+
+	cout << "GL Renderer:  " << glGetString(GL_RENDERER) << endl;
+	cout << "GL Version:   " << glGetString(GL_VERSION) << endl;
+	cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 
 	GLApp::CallInitialize();
 

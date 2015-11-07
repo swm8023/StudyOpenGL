@@ -1,6 +1,16 @@
-#include <GL/glew.h>
-#include <GL/glut.h>
 #include "GLApp.h"
+
+#ifdef NDEBUG
+#pragma comment (lib, "glew32.lib")
+#pragma comment (lib, "vimergl.lib")
+#else
+#pragma comment (lib, "glew32d.lib")
+#pragma comment (lib, "vimergld.lib")
+#endif
+
+#ifdef NDEBUG
+#else)
+#endif
 
 class DTriangleObject : public GLElement {
 public:
@@ -66,6 +76,7 @@ private:
 int main(int argc, char *argv[]) {
 	MyWindow *w = new MyWindow(512, 512, "Hello");
 	GLApp::GetInstance()->SetWindow(w);
+	GLApp::GetInstance()->SetContext(GLUT_CORE_PROFILE, 3, 3);
 	GLApp::GetInstance()->Go(argc, argv);
 
 }

@@ -2,15 +2,17 @@
 
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <GL/freeglut_ext.h>
 #include <string>
 #include <set>
 #include <iostream>
-using namespace std;
 
 #include "GLProg.h"
 #include "GLArray.h"
 #include "GLWindow.h"
 #include "GLElement.h"
+
+using namespace std;
 
 class GLApp {
 public:
@@ -23,15 +25,22 @@ public:
 	// before call this method, must set Window
 	void Go(int argc, char **argv);
 
+	void SetContext(int mode, int major, int minor);
 private:
 	// private variable
 	GLWindow* m_pGLWindow;
 
 	// private method
-	GLApp() { m_pGLWindow = nullptr; }		// singleton
+	// singleton
+	GLApp() : m_pGLWindow(nullptr), m_iMajor(-1), m_iMinor(-1){
+	}
 
 	// callback
 	static void CallInitialize();
 	static void CallDisplay();
 	static void CallReshape(int iWidth, int iHeight);
+
+	// context mode
+	int m_iContextMode;
+	int m_iMajor, m_iMinor;
 };

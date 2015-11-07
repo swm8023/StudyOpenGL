@@ -4,6 +4,7 @@
 // Load Methods
 bool GLElement::LoadResources(GLfloatArray *verts, GLfloatArray *colors, GLushortArray *indexes) {
 	// vertex array
+	printf("%p %p %p\n", glGenVertexArrays, glBindVertexArray, glGenBuffers);
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
 
