@@ -74,7 +74,7 @@ public:
 	DECLARE_SETUNIFORM_M(mat3, glUniformMatrix3fv);
 	DECLARE_SETUNIFORM_M(mat4, glUniformMatrix4fv);
 
-	GLint GetUniformLocation(string &name) {
+	GLint GetUniformLocation(string name) {
 		map<string, GLint>::iterator it = m_uniformMap.find(name);
 		if (it != m_uniformMap.end()) {
 			return it->second;

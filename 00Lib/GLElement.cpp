@@ -16,8 +16,8 @@ void GLSimpleElement::LoadIndex(vector<GLushort> &indexVec) {
 	this->m_indexArr.Init(1, indexVec.size(), indexVec);
 }
 
-void GLSimpleElement::LoadTexture(string path, int texid) {
-	this->m_textureInfo.push_back({ texid, path, 0 });
+void GLSimpleElement::LoadTexture(string path, int texid, GLint loc) {
+	this->m_textureInfo.push_back({ texid, path, 0, loc});
 }
 
 // init opengl vao, vbo and ebo
@@ -73,6 +73,7 @@ void GLSimpleElement::DrawArrays(GLenum type, int first, int nums) {
 		TextureInfo *tinfo = &m_textureInfo[i];
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, tinfo->to);
+		glUniform1i(tinfo->loc, i);
 	}
 	glBindVertexArray(m_vao);
 	glDrawArrays(type, first, nums);
@@ -84,6 +85,13 @@ void GLSimpleElement::DrawArrays(GLenum type) {
 }
 
 void GLSimpleElement::DrawElements(GLenum type) {
+	for (size_t i = 0; i < m_textureInfo.size(); i++) {
+		TextureInfo *tinfo = &m_textureInfo[i];
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, tinfo->to);
+		glUniform1i(tinfo->loc, i);
+	}
 	glBindVertexArray(m_vao);
 	glDrawElements(type, m_indexArr.GetCol(), GL_UNSIGNED_SHORT, NULL);
+	glBindVertexArray(0);
 }

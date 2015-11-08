@@ -33,10 +33,13 @@ GLSL_FRAG glslFrag = DEFGLSL(
 	in vec2 oCoord;
 	
 	out vec4 fColor;
-	uniform sampler2D oTex;
+	uniform sampler2D oTex1;
+	uniform sampler2D oTex2;
+
 	void main() {
 		// fColor = vec4(oColor, 1.0);
-		fColor = texture(oTex, vec2(oCoord.x, 1 - oCoord.y)) * vec4(oColor, 1.0);
+		fColor = mix(texture(oTex1, vec2(oCoord.x, 1 - oCoord.y)) * vec4(oColor, 1.0), 
+			texture(oTex2, vec2(oCoord.x, 1 - oCoord.y)), 0.2);
 	}
 );
 
@@ -46,39 +49,36 @@ class DTriangleObject : public GLSimpleElement {
 public:
 	virtual void Initialize() {
 		GLfloatArray vert, color, coord;
-		vert.Init(6, 2, {
-			-0.90f, -0.90f,
-			 0.85f, -0.90f,
-			-0.90f,  0.85f,
-			 0.90f, -0.85f,
-			 0.90f,  0.90f,
-			-0.85f,  0.90f });
+		vert.Init(4, 3, {
+			 0.50f,  0.50f, 0.0f,
+			 0.50f, -0.50f, 0.0f,
+			-0.50f, -0.50f, 0.0f,
+			-0.50f,  0.50f, 0.0f,
+		});
 		
-		color.Init(6, 3, {
+		color.Init(4, 3, {
 			1.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 1.0f,
-			1.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
 		});
 
-		coord.Init(6, 2, {
-			0.0f, 0.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 0.0f,
+		coord.Init(4, 2, {
 			1.0f, 1.0f,
+			1.0f, 0.0f,
+			0.0f, 0.0f,
 			0.0f, 1.0f,
 		});
 
-		vector<GLushort> index = { 0, 1, 2 };
+		vector<GLushort> index{0, 1, 3, 1, 2, 3};
+
 
 		LoadVertexArray(vert, 0);
 		LoadVertexArray(color, 1);
 		LoadVertexArray(coord, 2);
-		// LoadIndex(index);
-		LoadTexture("../Debug/test.bmp", 0);
+		LoadIndex(index);
+		LoadTexture("../Debug/5326572.jpg", 0, GLProg::GetFromID(RENDER_PROG)->GetUniformLocation("oTex1"));
+		LoadTexture("../Debug/test.jpg", 1, GLProg::GetFromID(RENDER_PROG)->GetUniformLocation("oTex2"));
 
 		InitGLResources();
 
@@ -86,8 +86,7 @@ public:
 	}
 
 	virtual void Update() {
-		DrawArrays(GL_TRIANGLES);
-		// DrawElements(GL_TRIANGLES);
+		DrawElements(GL_TRIANGLES);
 	}
 };
 

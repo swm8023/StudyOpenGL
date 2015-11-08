@@ -36,7 +36,7 @@ public:
 	void LoadIndex(vector<GLushort> &indexVec);
 
 	// Load texture img
-	void LoadTexture(string path, int texid);
+	void LoadTexture(string path, int texid, GLint loc);
 
 	// init resources
 	void InitGLResources();
@@ -67,6 +67,7 @@ private:
 		GLint texid;
 		string path;
 		GLuint to;	// texture object
+		GLint loc;
 	};
 	vector<TextureInfo> m_textureInfo;
 };
