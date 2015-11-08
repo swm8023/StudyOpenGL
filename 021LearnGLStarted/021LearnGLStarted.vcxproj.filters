@@ -15,33 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GLApp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GLWindow.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GLElement.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GLArray.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GLProg.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="GLApp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GLWindow.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GLElement.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GLProg.cpp">
+    <ClCompile Include="..\01Intro\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

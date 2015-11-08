@@ -20,6 +20,10 @@ void GLApp::SetContext(int mode, int major, int minor) {
 	m_iMinor = minor;
 }
 
+void GLApp::SetFrameInSecond(int frame) {
+	m_iFrameInSecond = frame;
+}
+
 void GLApp::Go(int argc, char **argv) {
 	if (m_pGLWindow == nullptr) {
 		cerr << "Window not set!!" << endl;
@@ -50,6 +54,9 @@ void GLApp::Go(int argc, char **argv) {
 
 	glutDisplayFunc(GLApp::CallDisplay);
 	glutReshapeFunc(GLApp::CallReshape);
+	if (m_iFrameInSecond != -1) {
+		glutTimerFunc(1000 / m_iFrameInSecond, GLApp::CallTimerPostRedisplay, 1000 / m_iFrameInSecond);
+	}
 	glutMainLoop();
 }
 
@@ -63,14 +70,21 @@ void GLApp::CallInitialize() {
 
 void GLApp::CallDisplay() {
 	GLApp *gl = GLApp::GetInstance();
-	if (gl->m_pGLWindow)
+	if (gl->m_pGLWindow) {
+		glutSwapBuffers();
 		gl->m_pGLWindow->BeforeUpdate();
-	gl->m_pGLWindow->Update();
-	gl->m_pGLWindow->AfterUpdate();
+		gl->m_pGLWindow->Update();
+		gl->m_pGLWindow->AfterUpdate();
+	}
 }
 
 void GLApp::CallReshape(int iWidth, int iHeight) {
 	GLApp *gl = GLApp::GetInstance();
 	if (gl->m_pGLWindow)
 		gl->m_pGLWindow->Reshape(iWidth, iHeight);
+}
+
+void GLApp::CallTimerPostRedisplay(int data) {
+	glutTimerFunc(data, GLApp::CallTimerPostRedisplay, data);
+	glutPostRedisplay();
 }

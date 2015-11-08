@@ -26,21 +26,27 @@ public:
 	void Go(int argc, char **argv);
 
 	void SetContext(int mode, int major, int minor);
+	void SetFrameInSecond(int frame);	// frame per second
 private:
 	// private variable
 	GLWindow* m_pGLWindow;
 
 	// private method
 	// singleton
-	GLApp() : m_pGLWindow(nullptr), m_iMajor(-1), m_iMinor(-1){
+	GLApp() : m_pGLWindow(nullptr), m_iMajor(-1), m_iMinor(-1),
+		m_iFrameInSecond(-1){
 	}
 
 	// callback
 	static void CallInitialize();
 	static void CallDisplay();
 	static void CallReshape(int iWidth, int iHeight);
+	static void CallTimerPostRedisplay(int);
 
 	// context mode
 	int m_iContextMode;
 	int m_iMajor, m_iMinor;
+
+	// frame per second
+	int m_iFrameInSecond;
 };

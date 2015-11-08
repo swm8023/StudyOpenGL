@@ -15,7 +15,6 @@ public:
 		m_iRow = iRow;
 		m_iCol = iCol;
 	}
-
 	const T* Data() const {
 		return Size() > 0 ? &m_data[0] : nullptr;
 	}

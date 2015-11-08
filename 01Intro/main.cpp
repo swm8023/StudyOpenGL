@@ -1,6 +1,8 @@
 #include "GLApp.h"
+#include <cmath>
+//#include <GL/glm/glm.hpp>
 
-#include <GL/glm/glm.hpp>
+#pragma comment (lib, "SOIL.lib")
 
 #ifdef NDEBUG
 #pragma comment (lib, "glew32.lib")
@@ -13,29 +15,37 @@
 
 GLSL_VERT glslVert = DEFGLSL(
 	layout(location = 0) in vec4 vPosition;
-	layout(location = 1) in vec4 vColor;
+	layout(location = 1) in vec3 vColor;
+	layout(location = 2) in vec2 vCoord;
 
-	out vec4 fs_Color;
+	out vec3 oColor;
+	out vec2 oCoord;
+
 	void main() {
 		gl_Position = vPosition;
-		fs_Color = vColor;
+		oColor = vColor;
+		oCoord = vCoord;
 	}
 );
 
 GLSL_FRAG glslFrag = DEFGLSL(
-	in vec4 fs_Color;
+	in vec3 oColor;
+	in vec2 oCoord;
+	
 	out vec4 fColor;
-
+	uniform sampler2D oTex;
 	void main() {
-		fColor = fs_Color;
+		// fColor = vec4(oColor, 1.0);
+		fColor = texture(oTex, vec2(oCoord.x, 1 - oCoord.y)) * vec4(oColor, 1.0);
 	}
 );
 
-class DTriangleObject : public GLElement {
+#define RENDER_PROG 1
+
+class DTriangleObject : public GLSimpleElement {
 public:
 	virtual void Initialize() {
-		GLfloatArray vert, color;
-		GLushortArray index;
+		GLfloatArray vert, color, coord;
 		vert.Init(6, 2, {
 			-0.90f, -0.90f,
 			 0.85f, -0.90f,
@@ -52,14 +62,27 @@ public:
 			0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 1.0f,
 		});
-		
-		index.Init(3, 1, {
-			0, 1, 2
+
+		coord.Init(6, 2, {
+			0.0f, 0.0f,
+			1.0f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f,
+			0.0f, 1.0f,
 		});
 
-		LoadVertexes(&vert);
-		LoadColors(&color);
-		LoadIndexes(&index);
+		vector<GLushort> index = { 0, 1, 2 };
+
+		LoadVertexArray(vert, 0);
+		LoadVertexArray(color, 1);
+		LoadVertexArray(coord, 2);
+		// LoadIndex(index);
+		LoadTexture("../Debug/test.bmp", 0);
+
+		InitGLResources();
+
+		
 	}
 
 	virtual void Update() {
@@ -81,19 +104,26 @@ public:
 			{GL_FRAGMENT_SHADER, glslFrag},
 			{GL_NONE, nullptr},
 		};
-		prog.LoadShaderStrings(shaders);
-		prog.Link();
-		prog.Use();
+
+		GLProg *prog = GLProg::Create(RENDER_PROG);
+		prog->LoadShaderStrings(shaders);
+		prog->Link();
+		prog->Use();
 
 
 		DTriangleObject *dto = new DTriangleObject();
 		dto->Initialize();
 		this->addElement(dto);
 
+
+
 	}
 
 	void BeforeUpdate() {
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		vec4 color{ sin(GetTickCount() / 1000.0f) / 2.0f + 0.5f };
+		GLProg *prog = GLProg::GetFromID(RENDER_PROG);
 	}
 
 	void AfterUpdate() {
@@ -105,16 +135,16 @@ public:
 	}
 
 private:
-	GLProg prog;
 
 	DTriangleObject *dtobj;
 
 };
 
 int main(int argc, char *argv[]) {
-	MyWindow *w = new MyWindow(512, 512, "Hello");
+	MyWindow *w = new MyWindow(512, 512, "Hello 2");
 	GLApp::GetInstance()->SetWindow(w);
 	GLApp::GetInstance()->SetContext(GLUT_CORE_PROFILE, 3, 3);
+	GLApp::GetInstance()->SetFrameInSecond(60);
 	GLApp::GetInstance()->Go(argc, argv);
 
 }

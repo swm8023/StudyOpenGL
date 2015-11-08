@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "GLArray.h"
 
@@ -17,29 +18,55 @@ public:
 	virtual void Initialize() = 0;
 	virtual void Update() = 0;
 
-	GLElement() {
-		m_vao = m_vbo = m_cbo = m_ebo = 0;
-		m_vaoNum = m_vboNum = m_cboNum = m_eboNum = 0;
-		m_vboLayoutIndex = m_cboLayoutIndex = -1;
+// Getter and Setter
+	GLWindow* GetWindow() const;
+};
+
+
+class GLSimpleElement : public GLElement {
+public:
+	GLSimpleElement() {
 	}
 
-	// Load Methods
-	void LoadVertexes(GLfloatArray *verts, int layoutIndex = 0);
-	void LoadColors(GLfloatArray *colors, int layoutIndex = 1);
-	void LoadIndexes(GLushortArray *indexes);
-	void LoadCoords(GLfloatArray &coords, string path);
- 
+	// Load Vertex Params, maybe vertex position, color or texture coords
+	void LoadVertexArray(GLfloatArray &arr, GLint layoutIndex,
+		GLenum drawMethod = GL_STATIC_DRAW);
+	
+	// Load Indexs, for glDrawElements
+	void LoadIndex(vector<GLushort> &indexVec);
+
+	// Load texture img
+	void LoadTexture(string path, int texid);
+
+	// init resources
+	void InitGLResources();
+
 	// Draw Methods
 	void DrawArrays(GLenum type, int first, int nums);
 	void DrawArrays(GLenum type);
 
 	void DrawElements(GLenum type);
 
-	// Getter and Setter
-	GLWindow* GetWindow() const;
-
 private:
-	GLuint m_vao, m_vbo, m_cbo, m_ebo;
-	GLint m_vaoNum, m_vboNum, m_cboNum, m_eboNum;
-	int m_vboLayoutIndex, m_cboLayoutIndex;
+	GLuint m_vao, m_ebo;
+
+	// indexes
+	GLushortArray m_indexArr;
+	
+	// vertex info 
+	struct VertexArrayInfo {
+		GLint layoutIndex;
+		GLfloatArray paramArr;
+		GLuint bo;	// buffer object
+		GLenum drawMethod;
+	};
+	vector<VertexArrayInfo> m_vertexArrayInfo;
+
+	// texture info
+	struct TextureInfo {
+		GLint texid;
+		string path;
+		GLuint to;	// texture object
+	};
+	vector<TextureInfo> m_textureInfo;
 };
