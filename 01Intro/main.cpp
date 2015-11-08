@@ -1,5 +1,7 @@
 #include "GLApp.h"
 
+#include <GL/glm/glm.hpp>
+
 #ifdef NDEBUG
 #pragma comment (lib, "glew32.lib")
 #pragma comment (lib, "vimergl.lib")
@@ -8,14 +10,32 @@
 #pragma comment (lib, "vimergld.lib")
 #endif
 
-#ifdef NDEBUG
-#else)
-#endif
+
+GLSL_VERT glslVert = DEFGLSL(
+	layout(location = 0) in vec4 vPosition;
+	layout(location = 1) in vec4 vColor;
+
+	out vec4 fs_Color;
+	void main() {
+		gl_Position = vPosition;
+		fs_Color = vColor;
+	}
+);
+
+GLSL_FRAG glslFrag = DEFGLSL(
+	in vec4 fs_Color;
+	out vec4 fColor;
+
+	void main() {
+		fColor = fs_Color;
+	}
+);
 
 class DTriangleObject : public GLElement {
 public:
 	virtual void Initialize() {
-		GLfloatArray vert;
+		GLfloatArray vert, color;
+		GLushortArray index;
 		vert.Init(6, 2, {
 			-0.90f, -0.90f,
 			 0.85f, -0.90f,
@@ -23,11 +43,28 @@ public:
 			 0.90f, -0.85f,
 			 0.90f,  0.90f,
 			-0.85f,  0.90f });
-		LoadResources(&vert, nullptr, nullptr);
+		
+		color.Init(6, 3, {
+			1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 1.0f,
+		});
+		
+		index.Init(3, 1, {
+			0, 1, 2
+		});
+
+		LoadVertexes(&vert);
+		LoadColors(&color);
+		LoadIndexes(&index);
 	}
 
 	virtual void Update() {
 		DrawArrays(GL_TRIANGLES);
+		// DrawElements(GL_TRIANGLES);
 	}
 };
 
@@ -39,14 +76,15 @@ public:
 	}
 
 	void Initialize() {
-		ShaderFile shaders[] = {
-			{GL_VERTEX_SHADER, "../01Intro/triangles.vert"},
-			{GL_FRAGMENT_SHADER, "../01Intro/triangles.frag"},
+		GLShader shaders[] = {
+			{GL_VERTEX_SHADER, glslVert},
+			{GL_FRAGMENT_SHADER, glslFrag},
 			{GL_NONE, nullptr},
 		};
-		prog.LoadFromFiles(shaders);
+		prog.LoadShaderStrings(shaders);
 		prog.Link();
 		prog.Use();
+
 
 		DTriangleObject *dto = new DTriangleObject();
 		dto->Initialize();

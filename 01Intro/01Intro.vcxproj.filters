@@ -13,21 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="源文件\Shaders">
-      <UniqueIdentifier>{baa9d0ea-805a-401a-8e4d-d574cf6885ac}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="triangles.vert">
-      <Filter>源文件\Shaders</Filter>
-    </None>
-    <None Include="triangles.frag">
-      <Filter>源文件\Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>

@@ -1,52 +1,51 @@
 #include "GLElement.h"
 #include "GLApp.h"
 
+
 // Load Methods
-bool GLElement::LoadResources(GLfloatArray *verts, GLfloatArray *colors, GLushortArray *indexes) {
-	// vertex array
-	printf("%p %p %p\n", glGenVertexArrays, glBindVertexArray, glGenBuffers);
-	glGenVertexArrays(1, &m_vao);
+void GLElement::LoadVertexes(GLfloatArray *vertexes, int layoutIndex) {
+	// create vertex object if not created
+	if (m_vao == 0) {
+		glGenVertexArrays(1, &m_vao);
+	}
 	glBindVertexArray(m_vao);
+	m_vboNum = vertexes->GetRow();
 
-	int numLocation = 0;
-	// init vertex buffer 
-	if (verts != nullptr) {
-		m_vboNum = verts->GetRow();
-
-		glGenBuffers(1, &m_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, verts->Size(), verts->Data(), GL_STATIC_DRAW);
-		glVertexAttribPointer(numLocation, verts->GetCol(), GL_FLOAT, GL_FALSE, 0, NULL);
-		glEnableVertexAttribArray(numLocation);
-		numLocation++;
-	}
-
-	// init color buffer
-	if (colors != nullptr) {
-		m_cboNum = colors->GetRow();
-
-		glGenBuffers(1, &m_cbo);
-		glBindBuffer(GL_ARRAY_BUFFER, m_cbo);
-		glBufferData(GL_ARRAY_BUFFER, colors->Size(), colors->Data(), GL_STATIC_DRAW);
-		glVertexAttribPointer(numLocation, colors->GetCol(), GL_FLOAT, GL_FALSE, 0, NULL);
-		glEnableVertexAttribArray(numLocation);
-		numLocation++;
-	}
-
-	// init index buffer
-	if (indexes != nullptr) {
-		m_eboNum = indexes->GetRow();
-
-		glGenBuffers(1, &m_ebo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes->Size(), indexes->Data(), GL_STATIC_DRAW);
-	}
-
-	return true;
+	// create vertex buffer and enable vertex
+	glGenBuffers(1, &m_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertexes->Size(), vertexes->Data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(layoutIndex, vertexes->GetCol(), GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(layoutIndex);
 }
 
-bool GLElement::LoadCoords(GLfloatArray &coords, string path) {
-	return false;
+void GLElement::LoadColors(GLfloatArray *colors, int layoutIndex) {
+	// create vertex object if not created
+	if (m_vao == 0) {
+		glGenVertexArrays(1, &m_vao);
+	}
+
+	glBindVertexArray(m_vao);
+	m_vboNum = colors->GetRow();
+
+	// create color buffer and enable vertex
+	glGenBuffers(1, &m_cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, m_cbo);
+	glBufferData(GL_ARRAY_BUFFER, colors->Size(), colors->Data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(layoutIndex, colors->GetCol(), GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(layoutIndex);
+}
+
+void GLElement::LoadIndexes(GLushortArray *indexes) {
+	m_eboNum = indexes->GetRow();
+
+	glGenBuffers(1, &m_ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes->Size(), indexes->Data(), GL_STATIC_DRAW);
+}
+
+void GLElement::LoadCoords(GLfloatArray &coords, string path) {
+	;
 }
 
 // Draw Methods
@@ -56,11 +55,11 @@ void GLElement::DrawArrays(GLenum type, int first, int nums) {
 }
 
 void GLElement::DrawArrays(GLenum type) {
-	return glDrawArrays(type, 0, m_vboNum);
+	DrawArrays(type, 0, m_vboNum);
 }
 
-void GLElement::DrawElements() {
-
+void GLElement::DrawElements(GLenum type) {
+	glDrawElements(type, m_eboNum, GL_UNSIGNED_SHORT, NULL);
 }
 
 // Getter and Setter
