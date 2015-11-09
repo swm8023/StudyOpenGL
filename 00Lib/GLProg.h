@@ -14,6 +14,7 @@
 using namespace std;
 using namespace glm;
 
+
 #define DEFGLSL(x) "#version 330 core\n#pragma debug(on)\n"#x
 
 typedef const char* GLSL_VERT;

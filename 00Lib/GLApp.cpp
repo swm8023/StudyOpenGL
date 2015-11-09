@@ -54,6 +54,10 @@ void GLApp::Go(int argc, char **argv) {
 
 	glutDisplayFunc(GLApp::CallDisplay);
 	glutReshapeFunc(GLApp::CallReshape);
+	glutKeyboardFunc(GLApp::CallKeyBoardPress);
+	glutKeyboardUpFunc(GLApp::CallKeyBoardUp);
+	glutMouseFunc(GLApp::CallMouse);
+
 	if (m_iFrameInSecond != -1) {
 		glutTimerFunc(1000 / m_iFrameInSecond, GLApp::CallTimerPostRedisplay, 1000 / m_iFrameInSecond);
 	}
@@ -87,4 +91,22 @@ void GLApp::CallReshape(int iWidth, int iHeight) {
 void GLApp::CallTimerPostRedisplay(int data) {
 	glutTimerFunc(data, GLApp::CallTimerPostRedisplay, data);
 	glutPostRedisplay();
+}
+
+void GLApp::CallKeyBoardPress(unsigned char key, int x, int y) {
+	GLApp *gl = GLApp::GetInstance();
+	if (gl->m_pGLWindow)
+		gl->m_pGLWindow->OnKey(key, 0, x, y);
+}
+
+void GLApp::CallKeyBoardUp(unsigned char key, int x, int y) {
+	GLApp *gl = GLApp::GetInstance();
+	if (gl->m_pGLWindow)
+		gl->m_pGLWindow->OnKey(key, 1, x, y);
+}
+
+void GLApp::CallMouse(int key, int state, int x, int y) {
+	GLApp *gl = GLApp::GetInstance();
+	if (gl->m_pGLWindow)
+		gl->m_pGLWindow->OnMouse(key, state, x, y);
 }

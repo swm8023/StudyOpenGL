@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <string>
+#include <cstdio>
 #include <set>
 #include <iostream>
 using namespace std;
@@ -14,10 +15,23 @@ public:
 	GLWindow(int iWidth, int iHeight, string strTitle);
 
 	// interface
-	virtual void Initialize() = 0;
-	virtual void BeforeUpdate() = 0;
-	virtual void AfterUpdate() = 0;
-	virtual void Reshape(int, int) = 0;
+	virtual void Initialize() {};
+	virtual void BeforeUpdate() {};
+	virtual void AfterUpdate() {};
+	virtual void Reshape(int, int) {};
+
+	virtual void OnMouse(int key, int state, int x, int y) {
+		printf("mouse %d %d on (%d, %d)\n", key, state, x, y);
+	}
+
+	virtual void OnKey(unsigned char key, int state, int x, int y) {
+		printf("key %d %d on (%d, %d)\n", key, state, x, y);
+	}
+
+	virtual void OnWheel(int key, int state, int x, int y) {
+	
+	}
+
 
 	void Update();
 
