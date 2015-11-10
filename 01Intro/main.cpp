@@ -68,6 +68,9 @@ public:
 		if (key >= 0 && key < 300) {
 			this->keyst[key] = !state;
 		}
+		if (key == 0) {
+			wheelDir = state;
+		}
 	}
 
 	virtual void Initialize() {
@@ -170,9 +173,9 @@ public:
 
 		InitGLResources();
 
-		camPos = vec3(0.0f, 0.0f, 3.0f);
-		camFront = vec3(0.0f, 0.0f, -1.0f);
-		camUp = vec3(0.0f, 1.0f, 0.0f);
+		camPos = vec3(0.0f, 0.0f, -3.0f);
+		camFront = normalize(vec3(0.0f, 0.0f, 1.0f));
+		camUp = normalize(vec3(0.0f, 1.0f, 0.0f));
 
 	}
 
@@ -180,15 +183,16 @@ public:
 		GLWindow *w = GetWindow();
 		GLProg *prog = GLProg::GetFromID(RENDER_PROG);
 
+		// change some parameters with user input
+		DoActions();
+
 		mat4 model, view, projection;
 		
 		// same projection matrix
-		projection = perspective(radians(45.0f), w->GetWidth() * 1.0f / w->GetHeight(), 0.1f, 100.0f);
-
+		projection = perspective(radians(aspect), w->GetWidth() * 1.0f / w->GetHeight(), 0.1f, 100.0f);
 		prog->SetUniform("projection", projection);
 
 		// view matrix
-		UpdateLookPoint();
 
 		//lookAt(eyePosition, lookPosition, upAxis)
 		view = lookAt(camPos, camPos + camFront, camUp);
@@ -197,9 +201,9 @@ public:
 		// more element, use different model matrix
 		glm::vec3 cubePositions[] = {
 			glm::vec3(0.0f,  0.0f,  0.0f),
-			glm::vec3(2.0f,  5.0f, -15.0f),
+			glm::vec3(2.0f,  5.0f, -3.0f),
 			glm::vec3(-1.5f, -2.2f, -2.5f),
-			glm::vec3(-3.8f, -2.0f, -12.3f),
+			glm::vec3(-3.8f, -2.0f, -5.3f),
 			glm::vec3(2.4f, -0.4f, -3.5f),
 			glm::vec3(-1.7f,  3.0f, -7.5f),
 			glm::vec3(1.3f, -2.0f, -2.5f),
@@ -223,9 +227,12 @@ private:
 
 	vec3 camPos, camFront, camUp;
 	GLfloat preX = -1, preY = -1, nowX, nowY;
-	GLfloat pitch = -0.0f, yaw = -90.0f;
+	GLfloat pitch = 0.0f, yaw = 90.0f;
 
-	void UpdateLookPoint() {
+	int wheelDir = 0;
+	GLfloat aspect = 40.0f;
+
+	void DoActions() {
 		// four direction
 		GLfloat speed = 0.05f;
 		if (keyst['w']) {
@@ -240,12 +247,11 @@ private:
 		if (keyst['d']) {
 			camPos += normalize(cross(camFront, camUp)) * speed;
 		}
-		// circle
+		// focus camera position, change direction user look at 
 		if (keyst[GLUT_LEFT_BUTTON]) {
 			// first press, don't care, move next frame
 			if (preX == -1) {
 				preX = nowX, preY = nowY;
-				cout << "set" << endl;
 			} else {
 				GLfloat detX = nowX - preX, detY = preY - nowY;
 				preX = nowX, preY = nowY;
@@ -261,6 +267,15 @@ private:
 		// reset pre position
 		} else {
 			preX = preY = -1;
+		}
+
+		// mouse wheel, won't auto up
+		if (wheelDir != 0) {
+			aspect += wheelDir * 3;
+			if (aspect > 89) aspect = 89;
+			if (aspect < 1) aspect = 1;
+
+			wheelDir = 0;
 		}
 	}
 
@@ -315,6 +330,10 @@ public:
 
 	void OnMotion(int x, int y) {
 		dtobj->SetKeyState(-1, 0, x, y);
+	}
+
+	void OnWheel(int key, int dir, int x, int y) {
+		dtobj->SetKeyState(key, dir, x, y);
 	}
 
 private:

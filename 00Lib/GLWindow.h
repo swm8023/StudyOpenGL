@@ -20,21 +20,11 @@ public:
 	virtual void AfterUpdate() {};
 	virtual void Reshape(int, int) {};
 
-	virtual void OnMouse(int key, int state, int x, int y) {
-		printf("mouse %d %d on (%d, %d)\n", key, state, x, y);
-	}
-
-	virtual void OnKey(unsigned char key, int state, int x, int y) {
-		printf("key %d %d on (%d, %d)\n", key, state, x, y);
-	}
-
-	virtual void OnWheel(int key, int state, int x, int y) {
-	
-	}
-
-	virtual void OnMotion(int x, int y) {
-	
-	}
+	virtual void OnMouse(int key, int state, int x, int y) {}
+	virtual void OnKey(unsigned char key, int state, int x, int y) {}
+	virtual void OnWheel(int key, int state, int x, int y) {}
+	virtual void OnMotion(int x, int y) {}
+	virtual void OnPassiveMotion(int x, int y) {}
 
 
 	void Update();

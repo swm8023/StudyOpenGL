@@ -46,6 +46,7 @@ private:
 	static void CallKeyBoardUp(unsigned char key, int y, int z);
 	static void CallMouse(int key, int state, int x, int y);
 	static void CallMotion(int x, int y);
+	static void CallWheel(int button, int dir, int x, int y);
 	// context mode
 	int m_iContextMode;
 	int m_iMajor, m_iMinor;

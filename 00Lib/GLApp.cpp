@@ -58,6 +58,7 @@ void GLApp::Go(int argc, char **argv) {
 	glutKeyboardUpFunc(GLApp::CallKeyBoardUp);
 	glutMouseFunc(GLApp::CallMouse);
 	glutMotionFunc(GLApp::CallMotion);
+	glutMouseWheelFunc(GLApp::CallWheel);
 
 	if (m_iFrameInSecond != -1) {
 		glutTimerFunc(1000 / m_iFrameInSecond, GLApp::CallTimerPostRedisplay, 1000 / m_iFrameInSecond);
@@ -116,4 +117,10 @@ void GLApp::CallMotion(int x, int y) {
 	GLApp *gl = GLApp::GetInstance();
 	if (gl->m_pGLWindow)
 		gl->m_pGLWindow->OnMotion(x, y);
+}
+
+void GLApp::CallWheel(int button, int dir, int x, int y) {
+	GLApp *gl = GLApp::GetInstance();
+	if (gl->m_pGLWindow)
+		gl->m_pGLWindow->OnWheel(button, dir, x, y);
 }
