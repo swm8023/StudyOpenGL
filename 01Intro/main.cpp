@@ -51,7 +51,7 @@ uniform sampler2D oTex2;
 
 void main() {
 	fColor = mix(texture(oTex1, vec2(oCoord.x, 1 - oCoord.y)), 
-		texture(oTex2, vec2(oCoord.x, 1 - oCoord.y)), 0.2);
+		texture(oTex2, vec2(oCoord.x, 1 - oCoord.y)), 0.4);
 }
 
 )";
@@ -60,6 +60,16 @@ void main() {
 
 class DTriangleObject : public GLSimpleElement {
 public:
+	void SetKeyState(int key, int state, int x, int y) {
+		// it's a move action
+		if (key == -1 || key == GLUT_LEFT_BUTTON) {
+			nowX = x, nowY = y;
+		}
+		if (key >= 0 && key < 300) {
+			this->keyst[key] = !state;
+		}
+	}
+
 	virtual void Initialize() {
 		GLfloatArray vert, coord;
 		vert.Init(36, 3, {
@@ -152,8 +162,6 @@ public:
 			0.0f, 1.0f
 		});
 
-
-
 		LoadVertexArray(vert, 0);
 		LoadVertexArray(coord, 1);
 
@@ -162,7 +170,10 @@ public:
 
 		InitGLResources();
 
-		
+		camPos = vec3(0.0f, 0.0f, 3.0f);
+		camFront = vec3(0.0f, 0.0f, -1.0f);
+		camUp = vec3(0.0f, 1.0f, 0.0f);
+
 	}
 
 	virtual void Update() {
@@ -176,14 +187,11 @@ public:
 
 		prog->SetUniform("projection", projection);
 
-		// view matrix on a circle, changed width time
-		float radius = 10;
-		float tm = GetTickCount() / 30.0f;
-		float camX = sin(radians(tm)) * radius;
-		float camZ = cos(radians(tm)) * radius;
+		// view matrix
+		UpdateLookPoint();
 
 		//lookAt(eyePosition, lookPosition, upAxis)
-		view = lookAt(vec3(camX, 0.0f, camZ), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+		view = lookAt(camPos, camPos + camFront, camUp);
 		prog->SetUniform("view", view);
 
 		// more element, use different model matrix
@@ -209,6 +217,53 @@ public:
 			DrawArrays(GL_TRIANGLES);
 		}
 	}
+
+private:
+	int keyst[300];
+
+	vec3 camPos, camFront, camUp;
+	GLfloat preX = -1, preY = -1, nowX, nowY;
+	GLfloat pitch = -0.0f, yaw = -90.0f;
+
+	void UpdateLookPoint() {
+		// four direction
+		GLfloat speed = 0.05f;
+		if (keyst['w']) {
+			camPos += camFront * speed;
+		}
+		if (keyst['s']) {
+			camPos -= camFront * speed;
+		}
+		if (keyst['a']) {
+			camPos -= normalize(cross(camFront, camUp)) * speed;
+		}
+		if (keyst['d']) {
+			camPos += normalize(cross(camFront, camUp)) * speed;
+		}
+		// circle
+		if (keyst[GLUT_LEFT_BUTTON]) {
+			// first press, don't care, move next frame
+			if (preX == -1) {
+				preX = nowX, preY = nowY;
+				cout << "set" << endl;
+			} else {
+				GLfloat detX = nowX - preX, detY = preY - nowY;
+				preX = nowX, preY = nowY;
+				detX *= speed, detY *= speed;
+				yaw += detX, pitch += detY;
+
+				camFront = vec3(cos(radians(yaw)) * cos(radians(pitch)),
+					sin(radians(pitch)),
+					sin(radians(yaw)) * cos(radians(pitch)));
+
+				camFront = normalize(camFront);
+			}
+		// reset pre position
+		} else {
+			preX = preY = -1;
+		}
+	}
+
 };
 
 
@@ -231,20 +286,15 @@ public:
 		prog->Use();
 
 
-		DTriangleObject *dto = new DTriangleObject();
-		dto->Initialize();
-		this->addElement(dto);
-
-
-
+		dtobj = new DTriangleObject();
+		dtobj->Initialize();
+		this->addElement(dtobj);
 
 	}
 
 	void BeforeUpdate() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-
-
 	}
 
 	void AfterUpdate() {
@@ -253,6 +303,18 @@ public:
 
 	void Reshape(int iWidth, int iHeight) {
 		cout << "reshape" << endl;
+	}
+
+	void OnMouse(int key, int state, int x, int y) {
+		dtobj->SetKeyState(key, state, x, y);
+	}
+
+	void OnKey(unsigned char key, int state, int x, int y) {
+		dtobj->SetKeyState(key, state, x, y);
+	}
+
+	void OnMotion(int x, int y) {
+		dtobj->SetKeyState(-1, 0, x, y);
 	}
 
 private:

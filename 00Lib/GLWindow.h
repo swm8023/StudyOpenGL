@@ -32,6 +32,10 @@ public:
 	
 	}
 
+	virtual void OnMotion(int x, int y) {
+	
+	}
+
 
 	void Update();
 
