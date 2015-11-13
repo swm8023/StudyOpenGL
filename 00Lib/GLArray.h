@@ -10,14 +10,29 @@ class GLArray {
 public:
 	GLArray() : m_iRow(0), m_iCol(0) {}
 
+	GLArray(int iRow, int iCol, vector<T> data) {
+		m_data = data;
+		m_iRow = iRow;
+		m_iCol = iCol;
+	}
+
 	void Init(int iRow, int iCol, vector<T> data) {
 		m_data = data;
 		m_iRow = iRow;
 		m_iCol = iCol;
 	}
+
+	GLArray& operator = (GLArray &obj) {
+		this->m_data = obj.Data();
+		this->m_iRow = obj.GetRow();
+		this->m_iCol = obj.GetCol();
+		return *this;
+	}
+
 	const T* Data() const {
 		return Size() > 0 ? &m_data[0] : nullptr;
 	}
+
 	const int Size() const {
 		return m_iRow * m_iCol * sizeof(T);
 	}

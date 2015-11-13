@@ -16,8 +16,14 @@ public:
 
 	// interface
 	virtual void Initialize() {};
-	virtual void BeforeUpdate() {};
-	virtual void AfterUpdate() {};
+	virtual void BeforeUpdate() {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+	};
+
+	virtual void AfterUpdate() {
+		glFlush();
+	};
 	virtual void Reshape(int, int) {};
 
 	virtual void OnMouse(int key, int state, int x, int y) {}

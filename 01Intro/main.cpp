@@ -307,35 +307,6 @@ public:
 
 	}
 
-	void BeforeUpdate() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
-	}
-
-	void AfterUpdate() {
-		glFlush();
-	}
-
-	void Reshape(int iWidth, int iHeight) {
-		cout << "reshape" << endl;
-	}
-
-	void OnMouse(int key, int state, int x, int y) {
-		dtobj->SetKeyState(key, state, x, y);
-	}
-
-	void OnKey(unsigned char key, int state, int x, int y) {
-		dtobj->SetKeyState(key, state, x, y);
-	}
-
-	void OnMotion(int x, int y) {
-		dtobj->SetKeyState(-1, 0, x, y);
-	}
-
-	void OnWheel(int key, int dir, int x, int y) {
-		dtobj->SetKeyState(key, dir, x, y);
-	}
-
 private:
 
 	DTriangleObject *dtobj;
