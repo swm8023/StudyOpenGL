@@ -41,9 +41,7 @@ void main() {
 )";
 
 // shader for cube
-GLSL_VERT glslCubeVert = R"(
-#version 330 core
-#pragma debug(on)
+GLSL_VERT glslCubeVert = DEFGLSL330(
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec3 vNormal;
@@ -57,19 +55,17 @@ out vec3 fragPos;
 
 void main() {
 	gl_Position = projection * view * model * vec4(vPosition, 1.0);
-	normal = mat3(transpose(inverse(model))) * normal;
+	normal = mat3(transpose(inverse(model))) * vNormal;
 	fragPos = vec3(model * vec4(vPosition, 1.0f));
 }
 
-)";
+);
 
-GLSL_FRAG glslCubeFrag = R"(
-#version 330 core
-#pragma debug(on)
-
+GLSL_FRAG glslCubeFrag = DEFGLSL330(
 uniform vec3 objectColor;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 in vec3 normal;
 in vec3 fragPos;
@@ -80,18 +76,23 @@ void main() {
 	float ambientStrength = 0.1f;
 	vec3 ambient = ambientStrength * lightColor;
 
-		// diffuse lighting
-	float v = dot(normalize(normal), normalize(lightPos - fragPos));
-	float diff = max(v, 0.0);
+	// diffuse lighting
+	vec3 lightDir = normalize(lightPos - fragPos);
+	float diff = max(dot(normalize(normal), lightDir), 0.0);
 	vec3 diffuse = diff * lightColor;
 	
 	// specular lighting
+	float specularStrength = 0.5f;
+	vec3 viewDir = normalize(viewPos - fragPos); 
+	vec3 reflectDir = reflect(-lightDir, normalize(normal));
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	vec3 specular = specularStrength * spec * lightColor;
 
-	vec3 result = (ambient + diffuse) * objectColor;
+	vec3 result = (ambient + diffuse + specular) * objectColor;
     fColor = vec4(result, 1.0f);
 }
 
-)";
+);
 
 GLfloatArray cubePosition(36, 3, {
 	-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
@@ -112,7 +113,7 @@ GLfloatArray cubeNormal(36, 3, {
 	 0.0f,  1.0f,  0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f
 });
 
-vec3 lightPos = vec3(1.2f, 1.0f, 0.0f);
+vec3 lightPos = vec3(1.0f, 0.3f, 0.0f);
 
 #define RENDER_CUBE_PROG   1
 #define RENDER_LIGHT_PROG  2
@@ -179,6 +180,7 @@ public:
 		prog->SetUniform("objectColor", vec3(1.0f, 0.5f, 0.31f));
 		prog->SetUniform("lightColor", vec3(1.0f, 1.0f, 1.0f));
 		prog->SetUniform("lightPos", lightPos);
+		prog->SetUniform("viewPos", w->GetCamera()->GetViewPos());
 
 		DrawArrays(GL_TRIANGLES);
 	}
@@ -217,13 +219,13 @@ public:
 		cubeProg->LoadShaderStrings(shadersCube);
 		cubeProg->Link();
 
-		// lightElt = new LightElement();
+		lightElt = new LightElement();
 		cubeElt = new CubeElement();
 
-		// lightElt->Initialize();
+		lightElt->Initialize();
 		cubeElt->Initialize();
 
-		// addElement(lightElt);
+		addElement(lightElt);
 		addElement(cubeElt);
 
 		this->GetCamera()->Initialize(vec3(0.0f, 1.0f, 3.0f), vec3(0.0f, 1.0f, 0.0f));

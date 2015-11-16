@@ -97,6 +97,9 @@ public:
 		updateVectors();
 	}
 
+	vec3 GetViewPos() {
+		return m_camPos;
+	}
 
 private:
 	vec3 m_camPos, m_camFront, m_camUp, m_camRight, m_worldUp;
