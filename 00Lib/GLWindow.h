@@ -8,6 +8,7 @@
 #include <iostream>
 using namespace std;
 
+class GLCamera;
 class GLElement;
 
 class GLWindow {
@@ -46,10 +47,13 @@ public:
 
 	void addElement(GLElement* pElem);
 
+	GLCamera * GetCamera() { return m_camera; }
+
 private:
 	int m_iWidth;
 	int m_iHeight;
 	string m_strTitle;
 
 	set<GLElement*> m_elemSet;
+	GLCamera *m_camera;
 };

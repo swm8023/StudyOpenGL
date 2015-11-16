@@ -11,6 +11,7 @@
 #include "GLArray.h"
 #include "GLWindow.h"
 #include "GLElement.h"
+#include "GLCamera.h"
 
 using namespace std;
 

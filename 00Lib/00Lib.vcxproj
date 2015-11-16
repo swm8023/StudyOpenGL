@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClInclude Include="GLApp.h" />
     <ClInclude Include="GLArray.h" />
+    <ClInclude Include="GLCamera.h" />
     <ClInclude Include="GLElement.h" />
     <ClInclude Include="GLProg.h" />
     <ClInclude Include="GLWindow.h" />

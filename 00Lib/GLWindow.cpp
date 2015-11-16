@@ -1,11 +1,13 @@
 #include "GLWindow.h"
 #include "GLElement.h"
-
+#include "GLCamera.h"
 
 GLWindow::GLWindow(int iWidth, int iHeight, string strTitle) {
 	this->m_iWidth = iWidth;
 	this->m_iHeight = iHeight;
 	this->m_strTitle = strTitle;
+
+	this->m_camera = new GLCamera();
 }
 
 
