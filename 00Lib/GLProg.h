@@ -37,6 +37,12 @@ typedef const char* GLSL_FRAG;
 		func(loc, 1, GL_FALSE, value_ptr(v));	\
 	}
 
+#define DECLARE_SETUNIFORM_B1(type, func)		\
+	void SetUniform(string name, type v) {		\
+		GLint loc = GetUniformLocation(name);	\
+		func(loc, v);							\
+	}
+
 struct GLShader {
 	GLenum type;
 	const char* context;
@@ -76,6 +82,8 @@ public:
 	DECLARE_SETUNIFORM_M(mat2, glUniformMatrix2fv);
 	DECLARE_SETUNIFORM_M(mat3, glUniformMatrix3fv);
 	DECLARE_SETUNIFORM_M(mat4, glUniformMatrix4fv);
+
+	DECLARE_SETUNIFORM_B1(float, glUniform1f);
 
 	GLint GetUniformLocation(string name) {
 		map<string, GLint>::iterator it = m_uniformMap.find(name);

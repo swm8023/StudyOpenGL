@@ -53,6 +53,7 @@ uniform mat4 model;
 out vec3 normal;
 out vec3 fragPos;
 
+
 void main() {
 	gl_Position = projection * view * model * vec4(vPosition, 1.0);
 	normal = mat3(transpose(inverse(model))) * vNormal;
@@ -62,9 +63,22 @@ void main() {
 );
 
 GLSL_FRAG glslCubeFrag = DEFGLSL330(
-uniform vec3 objectColor;
-uniform vec3 lightColor;
-uniform vec3 lightPos;
+struct Material {
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
+struct Light {	// power of light
+	vec3 position;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+uniform Material material;
+uniform Light light;
 uniform vec3 viewPos;
 
 in vec3 normal;
@@ -74,21 +88,21 @@ out vec4 fColor;
 void main() {
 	// ambient lighting
 	float ambientStrength = 0.1f;
-	vec3 ambient = ambientStrength * lightColor;
+	vec3 ambient = light.ambient * material.ambient;
 
 	// diffuse lighting
-	vec3 lightDir = normalize(lightPos - fragPos);
+	vec3 lightDir = normalize(light.position - fragPos);
 	float diff = max(dot(normalize(normal), lightDir), 0.0);
-	vec3 diffuse = diff * lightColor;
+	vec3 diffuse = light.diffuse * (diff * material.diffuse);
 	
 	// specular lighting
 	float specularStrength = 0.5f;
 	vec3 viewDir = normalize(viewPos - fragPos); 
 	vec3 reflectDir = reflect(-lightDir, normalize(normal));
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 specular = specularStrength * spec * lightColor;
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 specular = light.specular * (spec * material.specular);
 
-	vec3 result = (ambient + diffuse + specular) * objectColor;
+	vec3 result = ambient + diffuse + specular;
     fColor = vec4(result, 1.0f);
 }
 
@@ -177,10 +191,22 @@ public:
 		prog->SetUniform("view", w->GetCamera()->GetViewMatrix());
 		prog->SetUniform("model", model);
 
-		prog->SetUniform("objectColor", vec3(1.0f, 0.5f, 0.31f));
-		prog->SetUniform("lightColor", vec3(1.0f, 1.0f, 1.0f));
-		prog->SetUniform("lightPos", lightPos);
+		int now = GetTickCount() / 1000;
+
+		vec3 lightColor = vec3(sin(now * 2.0f), sin(now * 0.7f), sin(now * 1.3f));
 		prog->SetUniform("viewPos", w->GetCamera()->GetViewPos());
+
+		prog->SetUniform("material.ambient", vec3(1.0f, 0.5f, 0.31f));
+		prog->SetUniform("material.diffuse", vec3(1.0f, 0.5f, 0.31f));
+		prog->SetUniform("material.specular", vec3(0.5f, 0.5f, 0.5f));
+		prog->SetUniform("material.shininess", 32.0f);
+
+		prog->SetUniform("light.ambient", vec3(0.2f) * lightColor);
+		prog->SetUniform("light.diffuse", vec3(0.5f) * lightColor);
+		prog->SetUniform("light.specular", vec3(1.0f));
+		prog->SetUniform("light.position", lightPos);
+
+		
 
 		DrawArrays(GL_TRIANGLES);
 	}
