@@ -9,14 +9,18 @@
 
 #include "GLArray.h"
 
+#include <GL/assimp/Importer.hpp>
+#include <GL/assimp/scene.h>
+#include <GL/assimp/postprocess.h>
+
 using namespace std;
 
 class GLWindow;
 
 class GLElement {
 public:
-	virtual void Initialize() = 0;
-	virtual void Update() = 0;
+	virtual bool Initialize() { return true; };
+	virtual void Update() {};
 
 // Getter and Setter
 	GLWindow* GetWindow() const;
@@ -70,4 +74,20 @@ private:
 		GLint loc;
 	};
 	vector<TextureInfo> m_textureInfo;
+};
+
+// GLAssipElement;
+class GLAssipElement : public GLElement {
+public:
+	GLAssipElement(string assipPath, int progid);
+	virtual bool Initialize();
+	virtual void Update();
+
+private:
+	vector<GLSimpleElement*> m_elms;
+	string m_assipPath;
+	int m_progid;
+	
+	void ProcessNode(aiNode*, const aiScene*);
+	GLSimpleElement* ProcessMesh(aiMesh*, const aiScene*);
 };

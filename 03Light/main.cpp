@@ -1,6 +1,9 @@
 #include "GLApp.h"
 #include <cmath>
 #include <GL/glm/glm.hpp>
+#include <GL/assimp/Importer.hpp>
+#include <GL/assimp/scene.h>
+#include <GL/assimp/postprocess.h>
 
 using namespace glm;
 
@@ -9,15 +12,20 @@ using namespace glm;
 #ifdef NDEBUG
 #pragma comment (lib, "glew32.lib")
 #pragma comment (lib, "vimergl.lib")
+#pragma comment (lib, "assimp.lib")
 #else
 #pragma comment (lib, "glew32d.lib")
 #pragma comment (lib, "vimergld.lib")
+#pragma comment (lib, "assimp.lib")
 #endif
 
 // shaders for light point
-GLSL_VERT glslLightVert = R"(
-#version 330 core
-layout(location = 0) in vec3 vPosition;
+GLSL_VERT glslVert = DEFGLSL330(
+layout (location = 0) in vec3 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 2) in vec2 vTexcoords;
+
+out vec2 texCoords;
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -25,209 +33,22 @@ uniform mat4 model;
 
 void main() {
 	gl_Position = projection * view * model * vec4(vPosition, 1.0);
+	texCoords = vTexcoords;
 }
-
-)";
-
-GLSL_FRAG glslLightFrag = R"(
-#version 330 core
-	
-out vec4 fColor;
-
-void main() {
-	fColor = vec4(1.0f);
-}
-
-)";
-
-// shader for cube
-GLSL_VERT glslCubeVert = DEFGLSL330(
-
-layout(location = 0) in vec3 vPosition;
-layout(location = 1) in vec3 vNormal;
-layout(location = 2) in vec2 vTexcoords;
-
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat4 model;
-
-out vec3 normal;
-out vec3 fragPos;
-out vec2 texcoords;
-
-void main() {
-	gl_Position = projection * view * model * vec4(vPosition, 1.0);
-	normal = mat3(transpose(inverse(model))) * vNormal;
-	fragPos = vec3(model * vec4(vPosition, 1.0f));
-	texcoords = vTexcoords;
-}
-
 );
 
-GLSL_FRAG glslCubeFrag = DEFGLSL330(
-struct Material {
-	sampler2D diffuse;	// texture, let ambient same as diffuse
-	sampler2D specular;
-	float shininess;
-};
-
-struct Light {	// power of light
-	vec3 position;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
-};
-
-uniform Material material;
-uniform Light light;
-uniform vec3 viewPos;
-
-in vec2 texcoords;
-in vec3 normal;
-in vec3 fragPos;
+GLSL_FRAG glslFrag = DEFGLSL330(
+in vec2 texCoords;
 out vec4 fColor;
 
+uniform sampler2D texDiffuse1;
+
 void main() {
-	// ambient lighting
-	float ambientStrength = 0.1f;
-	vec3 ambient = light.ambient * vec3(texture(material.diffuse, texcoords));
-
-	// diffuse lighting
-	vec3 lightDir = normalize(light.position - fragPos);
-	float diff = max(dot(normalize(normal), lightDir), 0.0);
-	vec3 diffuse = light.diffuse * (diff * vec3(texture(material.diffuse, texcoords)));
-	
-	// specular lighting
-	float specularStrength = 0.5f;
-	vec3 viewDir = normalize(viewPos - fragPos); 
-	vec3 reflectDir = reflect(-lightDir, normalize(normal));
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-	vec3 specular = light.specular * (spec * vec3(texture(material.specular, texcoords)));
-
-	vec3 result = ambient + diffuse + specular;
-    fColor = vec4(result, 1.0f);
+	fColor = vec4(texture(texDiffuse1, texCoords));
 }
-
 );
 
-GLfloatArray cubePosition(36, 3, {
-	-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f,  1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,  1.0f,
-	-1.0f,  1.0f,  1.0f,-1.0f,  1.0f, -1.0f,-1.0f, -1.0f, -1.0f,-1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,
-	 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
-	-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f,
-});
-
-
-GLfloatArray cubeNormal(36, 3, {
-	 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-	 0.0f,  0.0f,  1.0f, 0.0f,  0.0f,  1.0f, 0.0f,  0.0f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-	-1.0f,  0.0f,  0.0f,-1.0f,  0.0f,  0.0f,-1.0f,  0.0f,  0.0f,-1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-	 1.0f,  0.0f,  0.0f, 1.0f,  0.0f,  0.0f, 1.0f,  0.0f,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-	 0.0f, -1.0f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,
-	 0.0f,  1.0f,  0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f
-});
-
-GLfloatArray cubeTexcoords(36, 2, {
-	0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-	1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
-});
-
-vec3 lightPos = vec3(1.0f, 0.3f, 0.0f);
-
-#define RENDER_CUBE_PROG   1
-#define RENDER_LIGHT_PROG  2
-
-
-
-class LightElement : public GLSimpleElement {
-public:
-
-	virtual void Initialize() {
-		GLfloatArray vert = cubePosition;
-		GLProg *prog = GLProg::GetFromID(RENDER_LIGHT_PROG);
-		prog->Use();
-		LoadVertexArray(vert, 0);
-		InitGLResources();
-	}
-
-	virtual void Update() {
-		GLWindow *w = GetWindow();
-		mat4 projection, model;
-
-		model = translate(model, lightPos);
-		model = scale(model, vec3(0.1f));
-		projection = perspective(radians(w->GetCamera()->GetAspect()), w->GetWidth() * 1.0f / w->GetHeight(), 0.1f, 100.0f);
-
-		GLProg *prog = GLProg::GetFromID(RENDER_LIGHT_PROG);
-		prog->Use();
-		prog->SetUniform("projection", projection);
-		prog->SetUniform("view", w->GetCamera()->GetViewMatrix());
-		prog->SetUniform("model", model);
-
-		DrawArrays(GL_TRIANGLES);
-	}
-
-private:
-
-};
-
-class CubeElement : public GLSimpleElement {
-public:
-
-	virtual void Initialize() {
-		GLfloatArray vert = cubePosition, normal = cubeNormal, texcoords = cubeTexcoords;
-		GLProg *prog = GLProg::GetFromID(RENDER_CUBE_PROG);
-		prog->Use();
-		LoadVertexArray(vert, 0);
-		LoadVertexArray(normal, 1);
-		LoadVertexArray(texcoords, 2);
-
-		LoadTexture("../Debug/container2.png", 0, prog->GetUniformLocation("material.diffuse"));
-		LoadTexture("../Debug/container2_specular.png", 1, prog->GetUniformLocation("material.specular"));
-
-		InitGLResources();
-	}
-
-	virtual void Update() {
-		GLWindow *w = GetWindow();
-		mat4 projection, view, model;
-
-		projection = perspective(radians(w->GetCamera()->GetAspect()), w->GetWidth() * 1.0f / w->GetHeight(), 0.1f, 100.0f);
-		model = scale(model, vec3(0.5f));
-		GLProg *prog = GLProg::GetFromID(RENDER_CUBE_PROG);
-		prog->Use();
-		prog->SetUniform("projection", projection);
-		prog->SetUniform("view", w->GetCamera()->GetViewMatrix());
-		prog->SetUniform("model", model);
-
-		vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
-
-		prog->SetUniform("viewPos", w->GetCamera()->GetViewPos());
-		prog->SetUniform("material.shininess", 32.0f);
-
-		prog->SetUniform("light.ambient", vec3(0.2f) * lightColor);
-		prog->SetUniform("light.diffuse", vec3(0.5f) * lightColor);
-		prog->SetUniform("light.specular", vec3(1.0f));
-		prog->SetUniform("light.position", lightPos);
-
-
-
-		DrawArrays(GL_TRIANGLES);
-	}
-
-private:
-
-
-
-};
-
-
+#define GLSL_PROG 1
 class MyWindow : public GLWindow {
 public:
 	MyWindow(int iWidth, int iHeight, string strTitle)
@@ -235,34 +56,18 @@ public:
 	}
 
 	void Initialize() {
-		GLShader shadersLight[] = {
-			{ GL_VERTEX_SHADER, glslLightVert },
-			{ GL_FRAGMENT_SHADER, glslLightFrag },
+		GLShader shaders[] = {
+			{ GL_VERTEX_SHADER, glslVert },
+			{ GL_FRAGMENT_SHADER, glslFrag },
 			{ GL_NONE, nullptr },
 		};
 
-		GLShader shadersCube[] = {
-			{ GL_VERTEX_SHADER, glslCubeVert },
-			{ GL_FRAGMENT_SHADER, glslCubeFrag },
-			{ GL_NONE, nullptr },
-		};
+		GLProg *prog = GLProg::Create(GLSL_PROG);
+		prog->LoadShaderStrings(shaders);
+		prog->Link();
 
-		GLProg *lightProg = GLProg::Create(RENDER_LIGHT_PROG);
-		lightProg->LoadShaderStrings(shadersLight);
-		lightProg->Link();
-
-		GLProg *cubeProg = GLProg::Create(RENDER_CUBE_PROG);
-		cubeProg->LoadShaderStrings(shadersCube);
-		cubeProg->Link();
-
-		lightElt = new LightElement();
-		cubeElt = new CubeElement();
-
-		lightElt->Initialize();
-		cubeElt->Initialize();
-
-		addElement(lightElt);
-		addElement(cubeElt);
+		auto glElm = new GLAssipElement("../nano/nanosuit.obj", GLSL_PROG);
+		glElm->Initialize();
 
 		this->GetCamera()->Initialize(vec3(0.0f, 1.0f, 3.0f), vec3(0.0f, 1.0f, 0.0f));
 	}
@@ -308,6 +113,18 @@ public:
 		if (wheelDir > 0) {
 			camera->HandleEvent(CAMERA_ZOOM_MORE, wheelDir * wheelSpeed);
 		}
+
+		// update uniform matrix
+		glm::mat4 projection = perspective(camera->GetAspect(), GetWidth() * 1.0f / GetHeight(), 0.1f, 100.0f);
+		glm::mat4 view = camera->GetViewMatrix();
+		// Draw the loaded model
+		glm::mat4 model;
+		//model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::scale(model, vec3(0.2f, 0.2f, 0.2f));
+
+		GLProg::GetFromID(GLSL_PROG)->SetUniform("projection", projection);
+		GLProg::GetFromID(GLSL_PROG)->SetUniform("view", view);
+		GLProg::GetFromID(GLSL_PROG)->SetUniform("model", model);
 	}
 
 
@@ -335,8 +152,6 @@ public:
 
 private:
 
-	LightElement *lightElt;
-	CubeElement *cubeElt;
 
 	bool keyst[300] = {0};
 	GLfloat preX = -1, preY, nowX, nowY;
