@@ -16,7 +16,7 @@ using namespace glm;
 #else
 #pragma comment (lib, "glew32d.lib")
 #pragma comment (lib, "vimergld.lib")
-#pragma comment (lib, "assimp.lib")
+#pragma comment (lib, "assimpd.lib")
 #endif
 
 // shaders for light point
@@ -65,9 +65,12 @@ public:
 		GLProg *prog = GLProg::Create(GLSL_PROG);
 		prog->LoadShaderStrings(shaders);
 		prog->Link();
+		prog->Use();
 
 		auto glElm = new GLAssipElement("../nano/nanosuit.obj", GLSL_PROG);
 		glElm->Initialize();
+
+		addElement(glElm);
 
 		this->GetCamera()->Initialize(vec3(0.0f, 1.0f, 3.0f), vec3(0.0f, 1.0f, 0.0f));
 	}
@@ -119,7 +122,7 @@ public:
 		glm::mat4 view = camera->GetViewMatrix();
 		// Draw the loaded model
 		glm::mat4 model;
-		//model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(0.0f, -1.50f, 0.0f));
 		model = glm::scale(model, vec3(0.2f, 0.2f, 0.2f));
 
 		GLProg::GetFromID(GLSL_PROG)->SetUniform("projection", projection);

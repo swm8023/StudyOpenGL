@@ -9,7 +9,7 @@ GLAssipElement::GLAssipElement(string path, int progid) {
 
 bool GLAssipElement::Initialize() {
 	Assimp::Importer importer;
-	const aiScene *scene = importer.ReadFile("../nano/nanosuit.mtl", aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene *scene = importer.ReadFile(m_assipPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		cout << "Assimp error: " << importer.GetErrorString() << endl;
 		return false;
@@ -20,9 +20,9 @@ bool GLAssipElement::Initialize() {
 }
 
 void GLAssipElement::Update() {
-	// for (int i = 0; i < m_elms.size(); i++) {
-	//	m_elms[i]->DrawElements(GL_TRIANGLES);
-	// }
+	for (int i = 0; i < m_elms.size(); i++) {
+		m_elms[i]->DrawElements(GL_TRIANGLES);
+	}
 
 }
 
@@ -69,7 +69,7 @@ GLSimpleElement* GLAssipElement::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 	elm->LoadVertexArray(GLfloatArray(position.size() / 3, 3, position), 0);
 	elm->LoadVertexArray(GLfloatArray(normal.size() / 3, 3, normal), 1);
-	elm->LoadVertexArray(GLfloatArray(texcoords.size() / 3, 3, texcoords), 2);
+	elm->LoadVertexArray(GLfloatArray(texcoords.size() / 2, 2, texcoords), 2);
 	elm->LoadIndex(index);
 
 	// texture
@@ -94,6 +94,8 @@ GLSimpleElement* GLAssipElement::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 			elm->LoadTexture(directory + "/" + str.C_Str(), texTotal++, loc);
 		}
 	}
+
+	elm->InitGLResources();
 
 	return elm;
 }
